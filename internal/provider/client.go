@@ -1,0 +1,124 @@
+package provider
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"time"
+)
+
+type AuthResponseTest struct {
+	DoiTAPITOken    string `json:"doiTAPITOken"`
+	CustomerContext string `json:"customerContext"`
+}
+
+// AuthStruct -
+type AuthStructTest struct {
+	DoiTAPITOken    string `json:"doiTAPITOken"`
+	CustomerContext string `json:"customerContext"`
+}
+
+// Client
+type ClientTest struct {
+	HostURL    string
+	HTTPClient *http.Client
+	Auth       AuthStructTest
+}
+
+// NewClient -
+func NewClientTest(host, doiTAPIClient, customerContext *string) (*ClientTest, error) {
+	c := ClientTest{
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		// Default DoiT URL
+		HostURL: HostURL,
+		Auth: AuthStructTest{
+			DoiTAPITOken:    *doiTAPIClient,
+			CustomerContext: *customerContext,
+		},
+	}
+
+	if host != nil {
+		c.HostURL = *host
+	}
+
+	_, err := c.SignIn()
+	if err != nil {
+		return nil, err
+	}
+
+	return &c, nil
+}
+
+func (c *ClientTest) SignIn() (*AuthResponseTest, error) {
+	if c.Auth.DoiTAPITOken == "" {
+		return nil, fmt.Errorf("define Doit API Token")
+	}
+	//rb, err := json.Marshal(c.Auth)
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	url_ccontext := "/?customerContext=" + c.Auth.CustomerContext
+	req, err := http.NewRequest("GET", c.HostURL+url_ccontext, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	ar := AuthResponseTest{
+		DoiTAPITOken:    c.Auth.DoiTAPITOken,
+		CustomerContext: c.Auth.CustomerContext,
+	}
+	//err = json.Unmarshal(body, &ar)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ar, nil
+}
+
+func (c *ClientTest) doRequest(req *http.Request) ([]byte, error) {
+	//req.Header.Set("Authorization", c.Token)
+	req.Header.Set("Authorization", "Bearer "+c.Auth.DoiTAPITOken)
+	res, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
+	}
+
+	return body, err
+}
+
+func (c *ClientTest) createAttribution(req *http.Request) ([]byte, error) {
+	req.Header.Set("Authorization", c.Auth.DoiTAPITOken)
+
+	res, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
+	}
+
+	return body, err
+}

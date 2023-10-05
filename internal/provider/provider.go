@@ -1,0 +1,237 @@
+package provider
+
+import (
+	"context"
+	"os"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	//"encoding/json"
+	//"strings""
+	"log"
+)
+
+// Ensure the implementation satisfies the expected interfaces.
+var (
+	_ provider.Provider = &doitProvider{}
+)
+
+// HostURL - Default DoiT URL
+const HostURL string = "https://api.doit.com"
+
+// doitProviderModel maps provider schema data to a Go type.
+type doitProviderModel struct {
+	Host            types.String `tfsdk:"host"`
+	DoiTAPITOken    types.String `tfsdk:"apitoken"`
+	CustomerContext types.String `tfsdk:"customercontext"`
+}
+
+// New is a helper function to simplify provider server and testing implementation.
+func New(version string) func() provider.Provider {
+	log.Print("hello provider New:)")
+	return func() provider.Provider {
+		log.Print("hello inside New:)")
+		return &doitProvider{
+			version: version,
+		}
+	}
+
+}
+
+// doitProvider is the provider implementation.
+type doitProvider struct {
+	// version is set to the provider version on release, "dev" when the
+	// provider is built and ran locally, and "test" when running acceptance
+	// testing.
+	version string
+}
+
+// Metadata returns the provider type name.
+func (p *doitProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+	log.Print("hello provider Metadata:)")
+	resp.TypeName = "doit"
+	resp.Version = p.version
+}
+
+// Schema defines the provider-level schema for configuration data.
+func (p *doitProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+	log.Print("hello provider Schema:)")
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"host": schema.StringAttribute{
+				Optional: true,
+			},
+			"apitoken": schema.StringAttribute{
+				Optional:  true,
+				Sensitive: true,
+			},
+			"customercontext": schema.StringAttribute{
+				Optional: true,
+			},
+		},
+	}
+}
+
+// Configure prepares a doit API client for data sources and resources.
+func (p *doitProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	log.Print("hello provider Configure:)")
+
+	doiTAPIToken := ""
+	host := ""
+	customerContext := ""
+	tflog.Info(ctx, "Configuring DoiT client")
+	log.Printf("[TRACE] Calling Program::")
+
+	ctx = tflog.SetField(ctx, "doit_host", host)
+	ctx = tflog.SetField(ctx, "doit_api_token", doiTAPIToken)
+	ctx = tflog.SetField(ctx, "doit_customer_context", customerContext)
+	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "doit_api_token")
+
+	tflog.Debug(ctx, "Creating DoiT Console client")
+
+	// Retrieve provider data from configuration
+	var config doitProviderModel
+	diags := req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	log.Printf("[TRACE] Config:")
+	log.Print(config)
+	log.Print(config.Host)
+	log.Print(config.DoiTAPITOken)
+	log.Print(config.CustomerContext)
+
+	// If practitioner provided a configuration value for any of the
+	// attributes, it must be a known value.
+
+	if config.Host.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("host"),
+			"Unknown DoiT API Host",
+			"-The provider cannot create the DoiT API client as there is an unknown configuration value for the DoiT API host. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the DOIT_HOST environment variable.",
+		)
+	}
+
+	if config.CustomerContext.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("CustomerContext"),
+			"Unknown DoiT API CustomerContext",
+			"-The provider cannot create the DoiT API client as there is an unknown configuration value for the DoiT API customerContext. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the DOIT_CUSTOMER_CONTEXT environment variable.",
+		)
+	}
+
+	if config.DoiTAPITOken.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("doiTAPITOken"),
+			"Unknown DoiT API DoiTAPITOken",
+			"-The provider cannot create the DoiT API client as there is an unknown configuration value for the DoiT API doiTAPITOken. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the DOIT_API_TOKEN environment variable.",
+		)
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Default values to environment variables, but override
+	// with Terraform configuration value if set.
+	doiTAPIToken = os.Getenv("DOIT_API_TOKEN")
+	host = os.Getenv("DOIT_HOST")
+	customerContext = os.Getenv("DOIT_CUSTOMER_CONTEXT")
+
+	if !config.Host.IsNull() {
+		host = config.Host.ValueString()
+	}
+
+	if !config.CustomerContext.IsNull() {
+		customerContext = config.CustomerContext.ValueString()
+	}
+
+	if !config.DoiTAPITOken.IsNull() {
+		doiTAPIToken = config.DoiTAPITOken.ValueString()
+	}
+
+	// If any of the expected configurations are missing, return
+	// errors with provider-specific guidance.
+
+	if host == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("host"),
+			"Missing DoiT API Host",
+			"The provider cannot create the DoiT API client as there is a missing or empty value for the DoiT API host. "+
+				"Set the host value in the configuration or use the DOIT_HOST environment variable. "+
+				"If either is already set, ensure the value is not empty.",
+		)
+	}
+
+	if customerContext == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("customerContext"),
+			"Missing DoiT Customer Context",
+			"The provider cannot create the DoiT API client as there is a missing or empty value for the DoiT API customer Context. "+
+				"Set the CustomerContext value in the configuration or use the DOIT_CUSTOMER_CONTEXT environment variable. "+
+				"If either is already set, ensure the value is not empty.",
+		)
+	}
+
+	if doiTAPIToken == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("doiTAPIToken"),
+			"Missing DoiT API Token",
+			"The provider cannot create the DoiT API client as there is a missing or empty value for the DoiT API token. "+
+				"Set the doiTAPIToken value in the configuration or use the DOIT_API_TOKEN environment variable. "+
+				"If either is already set, ensure the value is not empty.",
+		)
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Create a new DoiT client using the configuration values
+	client, err := NewClientTest(&host, &doiTAPIToken, &customerContext)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create DoiT API Client",
+			"An unexpected error occurred when creating the DoiT API client. "+
+				"If the error is not clear, please contact the provider developers.\n\n"+
+				"DoiT Client Error: "+err.Error(),
+		)
+		return
+	}
+
+	// Make the DoiT client available during DataSource and Resource
+	// type Configure methods.
+	resp.DataSourceData = client
+	resp.ResourceData = client
+
+	tflog.Info(ctx, "Configured DoiT client", map[string]any{"success": true})
+}
+
+// DataSources defines the data sources implemented in the provider.
+func (p *doitProvider) DataSources(_ context.Context) []func() datasource.DataSource {
+	log.Print("hello provider DataSources:)")
+	return []func() datasource.DataSource{
+		NewCoffeesDataSource,
+	}
+	return nil
+}
+
+// Resources defines the resources implemented in the provider.
+func (p *doitProvider) Resources(_ context.Context) []func() resource.Resource {
+	log.Print("hello provider Resources:)")
+	return []func() resource.Resource{
+		NewAttributionResource,
+	}
+	//return nil
+}
