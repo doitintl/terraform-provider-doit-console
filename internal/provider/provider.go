@@ -232,6 +232,7 @@ func (p *doitProvider) Resources(_ context.Context) []func() resource.Resource {
 	log.Print("hello provider Resources:)")
 	return []func() resource.Resource{
 		NewAttributionResource,
+		NewAttributionGroupResource,
 	}
 	//return nil
 }

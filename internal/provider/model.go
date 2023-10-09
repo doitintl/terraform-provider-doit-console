@@ -16,3 +16,13 @@ type Component struct {
 	Key           string   `json:"key"`
 	Values        []string `json:"values"`
 }
+
+// Attribution -
+type AttributionGroup struct {
+	Id           string   `json:"id,omitempty"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description,omitempty"`
+	NullFallBack string   `json:"nullfallback"`
+	LastUpdated  string   `json:"last_updated"`
+	Attributions []string `json:"attributions"`
+}
