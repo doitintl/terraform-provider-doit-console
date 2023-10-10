@@ -28,7 +28,7 @@ type ClientTest struct {
 // NewClient -
 func NewClientTest(host, doiTAPIClient, customerContext *string) (*ClientTest, error) {
 	c := ClientTest{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		HTTPClient: &http.Client{Timeout: 30 * time.Second},
 		// Default DoiT URL
 		HostURL: HostURL,
 		Auth: AuthStructTest{

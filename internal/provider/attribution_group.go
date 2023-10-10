@@ -10,18 +10,16 @@ import (
 
 // CreateAttributionGroup - Create new attributionGroup
 func (c *ClientTest) CreateAttributionGroup(attributionGroup AttributionGroup) (*AttributionGroup, error) {
-	log.Println("CreateAttributionGroup************************")
+	log.Println("CreateAttributionGroup")
 	log.Println(attributionGroup)
 	rb, err := json.Marshal(attributionGroup)
 	if err != nil {
 		return nil, err
 	}
-
-	log.Println("rb")
 	log.Println(strings.NewReader(string(rb)))
 
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/analytics/v1/attributiongroups/?customerContext=%s", c.HostURL, c.Auth.CustomerContext), strings.NewReader(string(rb)))
-	log.Println("URL----------------")
+	log.Println("URL:")
 	log.Println(req.URL)
 	if err != nil {
 		return nil, err
@@ -37,11 +35,9 @@ func (c *ClientTest) CreateAttributionGroup(attributionGroup AttributionGroup) (
 	attributionGroupResponse := AttributionGroup{}
 	err = json.Unmarshal(body, &attributionGroupResponse)
 	if err != nil {
-		log.Println("ERROR UNMARSHALL----------------")
-		log.Println(err)
 		return nil, err
 	}
-	log.Println("AttributionGroup response----------------")
+	log.Println("AttributionGroup response:")
 	log.Println(attributionGroupResponse)
 	return &attributionGroupResponse, nil
 }
@@ -56,21 +52,16 @@ func (c *ClientTest) UpdateAttributionGroup(attributionGroupID string, attributi
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Update URL----------------")
+	log.Println("Update UR:")
 	log.Println(req.URL)
 	body, err := c.doRequest(req)
+	log.Println("body:")
+	log.Println(string(body))
 	if err != nil {
 		return nil, err
 	}
 
-	attributionGroupResponse := AttributionGroup{}
-	err = json.Unmarshal(body, &attributionGroupResponse)
-	if err != nil {
-		return nil, err
-	}
-	log.Println("AttributionGroup response----------------")
-	log.Println(attributionGroupResponse)
-	return &attributionGroupResponse, nil
+	return &attributionGroup, nil
 }
 
 func (c *ClientTest) DeleteAttributionGroup(attributionGroupID string) error {
@@ -88,8 +79,8 @@ func (c *ClientTest) DeleteAttributionGroup(attributionGroupID string) error {
 }
 
 // GetAttributionGroup - Returns a specifc attribution
-func (c *ClientTest) GetAttributionGroup(orderID string) (*AttributionGroup, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/analytics/v1/attributiongroups/%s/?customerContext=%s", c.HostURL, orderID, c.Auth.CustomerContext), nil)
+func (c *ClientTest) GetAttributionGroup(attributionGroupID string) (*AttributionGroup, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/analytics/v1/attributiongroups/%s/?customerContext=%s", c.HostURL, attributionGroupID, c.Auth.CustomerContext), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -98,12 +89,25 @@ func (c *ClientTest) GetAttributionGroup(orderID string) (*AttributionGroup, err
 	if err != nil {
 		return nil, err
 	}
-
+	log.Println("AttributionGroup body----------------")
+	log.Println(string(body))
 	attributionGroup := AttributionGroup{}
-	err = json.Unmarshal(body, &attributionGroup)
+	attributionGroupGet := AttributionGroupGet{}
+	err = json.Unmarshal(body, &attributionGroupGet)
 	if err != nil {
 		return nil, err
 	}
 
+	//code that copy attributeGroupGet in attributionGroup
+	attributionGroup.Id = attributionGroupGet.Id
+	attributionGroup.Name = attributionGroupGet.Name
+	attributionGroup.Description = attributionGroupGet.Description
+	//code to intialise attributionGroup.Attribution as empty array
+	attributionGroup.Attributions = []string{}
+	//code that iterate attributionGroupGet.Attribution
+	for _, attribution := range attributionGroupGet.Attributions {
+		attributionGroup.Attributions = append(attributionGroup.Attributions, attribution.Id)
+	}
 	return &attributionGroup, nil
+
 }

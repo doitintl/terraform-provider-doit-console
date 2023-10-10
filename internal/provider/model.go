@@ -5,9 +5,9 @@ type Attribution struct {
 	Id          string      `json:"id,omitempty"`
 	Name        string      `json:"name"`
 	Description string      `json:"description,omitempty"`
-	Formula     string      `json:"formula"`
-	LastUpdated string      `json:"last_updated"`
-	Components  []Component `json:"components"`
+	Formula     string      `json:"formula,omitempty"`
+	LastUpdated string      `json:"last_updated,omitempty"`
+	Components  []Component `json:"components,omitempty"`
 }
 
 // Component -
@@ -22,7 +22,15 @@ type AttributionGroup struct {
 	Id           string   `json:"id,omitempty"`
 	Name         string   `json:"name"`
 	Description  string   `json:"description,omitempty"`
-	NullFallBack string   `json:"nullfallback"`
-	LastUpdated  string   `json:"last_updated"`
+	LastUpdated  string   `json:"last_updated,omitempty"`
 	Attributions []string `json:"attributions"`
+}
+
+// Attribution -
+type AttributionGroupGet struct {
+	Id           string        `json:"id,omitempty"`
+	Name         string        `json:"name"`
+	Description  string        `json:"description,omitempty"`
+	LastUpdated  string        `json:"last_updated"`
+	Attributions []Attribution `json:"attributions"`
 }

@@ -34,7 +34,6 @@ var (
 
 func main() {
 	var debug bool
-	log.Print("hello :)")
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
@@ -47,12 +46,8 @@ func main() {
 		Address: "hashicorp.com/edu/doit-console",
 		Debug:   debug,
 	}
-	log.Print("hello :)")
-
 	err := providerserver.Serve(context.Background(), provider.New(version), opts)
-	log.Print("chao ::)")
 	if err != nil {
-
 		log.Fatal(err.Error())
 	}
 }

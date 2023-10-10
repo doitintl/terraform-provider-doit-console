@@ -4,8 +4,9 @@ import (
 	"context"
 
 	"fmt"
-	"log"
 	"time"
+
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -17,7 +18,6 @@ type attributionGroupResourceModel struct {
 	Id           types.String   `tfsdk:"id"`
 	Name         types.String   `tfsdk:"name"`
 	Description  types.String   `tfsdk:"description"`
-	NullFallBack types.String   `tfsdk:"nullfallback"`
 	Attributions []types.String `tfsdk:"attributions"`
 	LastUpdated  types.String   `tfsdk:"last_updated"`
 }
@@ -39,32 +39,35 @@ type attributionGroupResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *attributionGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	log.Print("hello attribution group Metadata:)")
+func (r *attributionGroupResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	log.Println("attribution group Metadata")
 	resp.TypeName = req.ProviderTypeName + "_attribution_group"
 }
 
 // Schema defines the schema for the resource.
-func (r *attributionGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	log.Print("hello attributionGroup Schema:)")
+func (r *attributionGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	log.Print("attributionGroup Schema")
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "Numeric identifier of the attribution group",
+				Computed:    true,
 			},
 			"last_updated": schema.StringAttribute{
+				Description: "Timestamp of the last Terraform update of" +
+					"the attribution group.",
 				Computed: true,
 			},
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the attribution group",
+				Required:    true,
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
-			},
-			"nullfallback": schema.StringAttribute{
-				Optional: true,
+				Description: "Description of the attribution group",
+				Optional:    true,
 			},
 			"attributions": schema.ListAttribute{
+				Description: "list of the attributions IDs",
 				Required:    true,
 				ElementType: types.StringType,
 			},
@@ -73,8 +76,8 @@ func (r *attributionGroupResource) Schema(_ context.Context, _ resource.SchemaRe
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *attributionGroupResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	log.Print("hello attributionGroup Configure:)")
+func (r *attributionGroupResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	log.Print("attributionGroup Configure")
 	if req.ProviderData == nil {
 		return
 	}
@@ -95,10 +98,7 @@ func (r *attributionGroupResource) Configure(_ context.Context, req resource.Con
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *attributionGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	log.Println("hello attributionGroup Create:)")
-	log.Println(r.client.Auth.DoiTAPITOken)
-	log.Println("---------------------------------------------------")
-	log.Println(r.client.Auth.CustomerContext)
+	log.Println("attributionGroup Create")
 
 	// Retrieve values from plan
 	var plan attributionGroupResourceModel
@@ -112,7 +112,6 @@ func (r *attributionGroupResource) Create(ctx context.Context, req resource.Crea
 	var attributionGroup AttributionGroup
 	attributionGroup.Description = plan.Description.ValueString()
 	attributionGroup.Name = plan.Name.ValueString()
-	attributionGroup.NullFallBack = plan.NullFallBack.ValueString()
 	var attributions []string
 	for _, attribution := range plan.Attributions {
 		attributions = append(attributions, attribution.ValueString())
@@ -146,7 +145,7 @@ func (r *attributionGroupResource) Create(ctx context.Context, req resource.Crea
 
 // Read refreshes the Terraform state with the latest data.
 func (r *attributionGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	log.Print("hello attributionGroup Read:)")
+	log.Print("attributionGroup Read")
 	// Get current state
 	var state attributionGroupResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -154,7 +153,7 @@ func (r *attributionGroupResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	log.Print("state id::::::::::::::::::::::::::)")
+	log.Print("state id")
 	log.Print(state.Id.ValueString())
 	// Get refreshed attributionGroup value from DoiT
 	attributionGroup, err := r.client.GetAttributionGroup(state.Id.ValueString())
@@ -165,9 +164,8 @@ func (r *attributionGroupResource) Read(ctx context.Context, req resource.ReadRe
 		)
 		return
 	}
-	state.Id = types.StringValue(attributionGroup.Id)
+	//state.Id = types.StringValue(attributionGroup.Id)
 	state.Description = types.StringValue(attributionGroup.Description)
-	state.NullFallBack = types.StringValue(attributionGroup.NullFallBack)
 	state.Name = types.StringValue(attributionGroup.Name)
 
 	// Overwrite components with refreshed state
@@ -178,7 +176,7 @@ func (r *attributionGroupResource) Read(ctx context.Context, req resource.ReadRe
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
-	log.Print("state read::::::::::::::::::::::::::)")
+	log.Print("state read")
 	log.Print(state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -187,7 +185,7 @@ func (r *attributionGroupResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *attributionGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	log.Print("hello attributionGroup Update:)")
+	log.Println("attributionGroup Update")
 	// Retrieve values from plan
 	var plan attributionGroupResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -209,14 +207,13 @@ func (r *attributionGroupResource) Update(ctx context.Context, req resource.Upda
 	attributionGroup.Id = state.Id.ValueString()
 	attributionGroup.Description = plan.Description.ValueString()
 	attributionGroup.Name = plan.Name.ValueString()
-	attributionGroup.NullFallBack = plan.NullFallBack.ValueString()
 	var attributions []string
 
 	for _, attribution := range plan.Attributions {
 		attributions = append(attributions, attribution.ValueString())
 	}
 	attributionGroup.Attributions = attributions
-	log.Println("attributionGroup---------------------------------------------------")
+	log.Println("attributionGroup")
 	log.Println(attributionGroup)
 
 	// Update existing attributionGroup
@@ -243,7 +240,6 @@ func (r *attributionGroupResource) Update(ctx context.Context, req resource.Upda
 	// Update resource state with updated items and timestamp
 	plan.Id = types.StringValue(attributionGroupResponse.Id)
 	plan.Description = types.StringValue(attributionGroupResponse.Description)
-	plan.NullFallBack = types.StringValue(attributionGroupResponse.NullFallBack)
 	plan.Name = types.StringValue(attributionGroupResponse.Name)
 	plan.Attributions = []types.String{}
 	for _, attribution := range attributionGroupResponse.Attributions {
@@ -261,7 +257,7 @@ func (r *attributionGroupResource) Update(ctx context.Context, req resource.Upda
 // Delete deletes the resource and removes the Terraform state on success.
 
 func (r *attributionGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	log.Print("hello attributionGroup Delete:)")
+	log.Println("attributionGroup Delete")
 	// Retrieve values from state
 	var state attributionGroupResourceModel
 	diags := req.State.Get(ctx, &state)

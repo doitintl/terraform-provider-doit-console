@@ -14,7 +14,6 @@ import (
 
 	//"encoding/json"
 	//"strings""
-	"log"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -34,9 +33,7 @@ type doitProviderModel struct {
 
 // New is a helper function to simplify provider server and testing implementation.
 func New(version string) func() provider.Provider {
-	log.Print("hello provider New:)")
 	return func() provider.Provider {
-		log.Print("hello inside New:)")
 		return &doitProvider{
 			version: version,
 		}
@@ -53,25 +50,32 @@ type doitProvider struct {
 }
 
 // Metadata returns the provider type name.
-func (p *doitProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	log.Print("hello provider Metadata:)")
+func (p *doitProvider) Metadata(ctx context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+	tflog.Debug(ctx, "provider Metadata")
 	resp.TypeName = "doit"
 	resp.Version = p.version
 }
 
 // Schema defines the provider-level schema for configuration data.
-func (p *doitProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
-	log.Print("hello provider Schema:)")
+func (p *doitProvider) Schema(ctx context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+	tflog.Debug(ctx,"provider Schema")
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"host": schema.StringAttribute{
-				Optional: true,
+				Description: "URI for DoiT API. May also be provided via DOIT_HOST environment variable.",
+				Optional:    true,
 			},
 			"apitoken": schema.StringAttribute{
+				Description: "API Token to access DoiT API. May also be provided by DOIT_API_TOKEN" +
+					"environment variable. Refer to" +
+					"https://doitintl.atlassian.net/wiki/spaces/ENG/pages/7536967/CMP+API+for+Do+ers",
 				Optional:  true,
 				Sensitive: true,
 			},
 			"customercontext": schema.StringAttribute{
+				Description: "Customer context. May also be provided by DOIT_CUSTOMER_CONTEXT" +
+					"environment variable. Refer to" +
+					"https://doitintl.atlassian.net/wiki/spaces/ENG/pages/7536967/CMP+API+for+Do+ers",
 				Optional: true,
 			},
 		},
@@ -80,13 +84,13 @@ func (p *doitProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 
 // Configure prepares a doit API client for data sources and resources.
 func (p *doitProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	log.Print("hello provider Configure:)")
+	tflog.Debug(ctx, "provider Configure")
 
 	doiTAPIToken := ""
 	host := ""
 	customerContext := ""
 	tflog.Info(ctx, "Configuring DoiT client")
-	log.Printf("[TRACE] Calling Program::")
+	tflog.Trace(ctx, "[TRACE] Calling Program::")
 
 	ctx = tflog.SetField(ctx, "doit_host", host)
 	ctx = tflog.SetField(ctx, "doit_api_token", doiTAPIToken)
@@ -102,12 +106,6 @@ func (p *doitProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	log.Printf("[TRACE] Config:")
-	log.Print(config)
-	log.Print(config.Host)
-	log.Print(config.DoiTAPITOken)
-	log.Print(config.CustomerContext)
 
 	// If practitioner provided a configuration value for any of the
 	// attributes, it must be a known value.
@@ -220,19 +218,14 @@ func (p *doitProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 
 // DataSources defines the data sources implemented in the provider.
 func (p *doitProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	log.Print("hello provider DataSources:)")
-	return []func() datasource.DataSource{
-		NewCoffeesDataSource,
-	}
 	return nil
 }
 
 // Resources defines the resources implemented in the provider.
-func (p *doitProvider) Resources(_ context.Context) []func() resource.Resource {
-	log.Print("hello provider Resources:)")
+func (p *doitProvider) Resources(ctx context.Context) []func() resource.Resource {
+	tflog.Debug(ctx, "provider Resources")
 	return []func() resource.Resource{
 		NewAttributionResource,
 		NewAttributionGroupResource,
 	}
-	//return nil
 }
