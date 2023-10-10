@@ -4,6 +4,11 @@ terraform {
       source = "hashicorp.com/edu/doit-console"
     }
   }
+  backend "gcs" {
+    bucket = "iac-doit-console-prod"
+    prefix = "terraform/state"
+  }
+
 }
 
 resource "doit_attribution" "attri" {
