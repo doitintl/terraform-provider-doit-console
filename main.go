@@ -43,7 +43,7 @@ func main() {
 		// provider address is used in these tutorials in conjunction with a
 		// specific Terraform CLI configuration for manual development testing
 		// of this provider.
-		Address: "hashicorp.com/edu/doit-console",
+		Address: "registry.terraform.io/doitntl/doit-console",
 		Debug:   debug,
 	}
 	err := providerserver.Serve(context.Background(), provider.New(version), opts)
