@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	//"encoding/json"
 	//"strings""
 )
@@ -58,7 +57,7 @@ func (p *doitProvider) Metadata(ctx context.Context, _ provider.MetadataRequest,
 
 // Schema defines the provider-level schema for configuration data.
 func (p *doitProvider) Schema(ctx context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
-	tflog.Debug(ctx,"provider Schema")
+	tflog.Debug(ctx, "provider Schema")
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"host": schema.StringAttribute{
@@ -66,16 +65,15 @@ func (p *doitProvider) Schema(ctx context.Context, _ provider.SchemaRequest, res
 				Optional:    true,
 			},
 			"apitoken": schema.StringAttribute{
-				Description: "API Token to access DoiT API. May also be provided by DOIT_API_TOKEN" +
-					"environment variable. Refer to" +
-					"https://doitintl.atlassian.net/wiki/spaces/ENG/pages/7536967/CMP+API+for+Do+ers",
+				Description: "API Token to access DoiT API. May also be provided by DOIT_API_TOKEN " +
+					"environment variable. Refer to " +
+					"https://developer.doit.com/docs/start",
 				Optional:  true,
 				Sensitive: true,
 			},
 			"customercontext": schema.StringAttribute{
-				Description: "Customer context. May also be provided by DOIT_CUSTOMER_CONTEXT" +
-					"environment variable. Refer to" +
-					"https://doitintl.atlassian.net/wiki/spaces/ENG/pages/7536967/CMP+API+for+Do+ers",
+				Description: "Customer context. May also be provided by DOIT_CUSTOMER_CONTEXT " +
+					"environment variable. This field is requiered just for DoiT employees ",
 				Optional: true,
 			},
 		},
