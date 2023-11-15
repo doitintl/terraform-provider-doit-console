@@ -1,5 +1,5 @@
 resource "doit_report" "my_report" {
-  name = "Test Terraform update"
+  name        = "Test Terraform update"
   description = ""
   config = {
     metric = {
@@ -35,8 +35,8 @@ resource "doit_report" "my_report" {
       unit            = "day"
     }
     include_promotional_credits = false
-    layout = "stacked_column_chart"
-    display_values = "actuals_only"
-    currency    = "USD"
+    layout                      = "stacked_column_chart"
+    display_values              = "actuals_only"
+    currency                    = "USD"
   }
 }
