@@ -26,8 +26,8 @@ const HostURL string = "https://api.doit.com"
 // doitProviderModel maps provider schema data to a Go type.
 type doitProviderModel struct {
 	Host            types.String `tfsdk:"host"`
-	DoiTAPITOken    types.String `tfsdk:"apitoken"`
-	CustomerContext types.String `tfsdk:"customercontext"`
+	DoiTAPITOken    types.String `tfsdk:"api_token"`
+	CustomerContext types.String `tfsdk:"customer_context"`
 }
 
 // New is a helper function to simplify provider server and testing implementation.
@@ -64,14 +64,14 @@ func (p *doitProvider) Schema(ctx context.Context, _ provider.SchemaRequest, res
 				Description: "URI for DoiT API. May also be provided via DOIT_HOST environment variable.",
 				Optional:    true,
 			},
-			"apitoken": schema.StringAttribute{
+			"api_token": schema.StringAttribute{
 				Description: "API Token to access DoiT API. May also be provided by DOIT_API_TOKEN " +
 					"environment variable. Refer to " +
 					"https://developer.doit.com/docs/start",
 				Optional:  true,
 				Sensitive: true,
 			},
-			"customercontext": schema.StringAttribute{
+			"customer_context": schema.StringAttribute{
 				Description: "Customer context. May also be provided by DOIT_CUSTOMER_CONTEXT " +
 					"environment variable. This field is requiered just for DoiT employees ",
 				Optional: true,
@@ -161,13 +161,14 @@ func (p *doitProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	// errors with provider-specific guidance.
 
 	if host == "" {
-		resp.Diagnostics.AddAttributeError(
+		/*resp.Diagnostics.AddAttributeError(
 			path.Root("host"),
 			"Missing DoiT API Host",
 			"The provider cannot create the DoiT API client as there is a missing or empty value for the DoiT API host. "+
 				"Set the host value in the configuration or use the DOIT_HOST environment variable. "+
 				"If either is already set, ensure the value is not empty.",
-		)
+		)*/
+		host = HostURL
 	}
 
 	if customerContext == "" {

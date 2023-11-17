@@ -28,9 +28,12 @@ resource "doit-console_attribution" "attri" {
 ### Required
 
 - `components` (Attributes List) List of Attributions filters (see [below for nested schema](#nestedatt--components))
+- `name` (String) Name of the attribution
+
+### Optional
+
 - `description` (String) Description of the attribution
 - `formula` (String) Attribution formula (A is first component, B is second component, C is third component, etc.)
-- `name` (String) Name of the attribution
 
 ### Read-Only
 

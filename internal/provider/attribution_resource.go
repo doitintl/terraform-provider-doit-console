@@ -58,7 +58,7 @@ func (r *attributionResource) Schema(_ context.Context, _ resource.SchemaRequest
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Numeric identifier of the attribution",
-				Computed: true,
+				Computed:    true,
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "Timestamp of the last Terraform update of" +
@@ -67,30 +67,30 @@ func (r *attributionResource) Schema(_ context.Context, _ resource.SchemaRequest
 			},
 			"name": schema.StringAttribute{
 				Description: "Name of the attribution",
-				Required: true,
+				Required:    true,
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the attribution",
-				Required: true,
+				Optional:    true,
 			},
 			"formula": schema.StringAttribute{
-				Description: "Attribution formula (A is first component, "+
+				Description: "Attribution formula (A is first component, " +
 					"B is second component, C is third component, etc.)",
-				Required: true,
+				Optional: true,
 			},
 			"components": schema.ListNestedAttribute{
 				Description: "List of Attributions filters",
-				Required: true,
+				Required:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"type": schema.StringAttribute{
-							Description: "Type of the component (Standard, "+
+							Description: "Type of the component (Standard, " +
 								"Labels, Google Kubernetes Engin, Tags etc. )",
 							Required: true,
 						},
 						"key": schema.StringAttribute{
 							Description: "Key of the type to validate",
-							Required: true,
+							Required:    true,
 						},
 						"values": schema.ListAttribute{
 							Description: "Value of the key to validate",

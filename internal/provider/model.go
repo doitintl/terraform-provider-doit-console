@@ -67,9 +67,9 @@ type ExternalConfig struct {
 
 	// IncludePromotionalCredits Whether to include credits or not.
 	// If set, the report must use time interval “month”/”quarter”/”year”
-	IncludePromotionalCredits bool           `json:"includePromotionalCredits,omitempty"`
-	Layout                    string         `json:"layout,omitempty"`
-	Metric                    ExternalMetric `json:"metric,omitempty"`
+	IncludePromotionalCredits bool            `json:"includePromotionalCredits"`
+	Layout                    string          `json:"layout,omitempty"`
+	Metric                    *ExternalMetric `json:"metric,omitempty"`
 
 	// MetricFilter {
 	// "metric": {
@@ -94,10 +94,10 @@ type ExternalConfig struct {
 
 // AdvancedAnalysis Advanced analysis toggles. Each of these can be set independently
 type AdvancedAnalysis struct {
-	Forecast     bool `json:"forecast,omitempty"`
-	NotTrending  bool `json:"notTrending,omitempty"`
-	TrendingDown bool `json:"trendingDown,omitempty"`
-	TrendingUp   bool `json:"trendingUp,omitempty"`
+	Forecast     bool `json:"forecast"`
+	NotTrending  bool `json:"notTrending"`
+	TrendingDown bool `json:"trendingDown"`
+	TrendingUp   bool `json:"trendingUp"`
 }
 
 // Dimension {
@@ -123,7 +123,7 @@ type ExternalConfigFilter struct {
 	Id string `json:"id,omitempty"`
 
 	// Inverse If set, exclude the values
-	Inverse bool   `json:"inverse,omitempty"`
+	Inverse bool   `json:"inverse"`
 	Type    string `json:"type,omitempty"`
 
 	// Values What values to filter on or exclude
@@ -133,14 +133,14 @@ type ExternalConfigFilter struct {
 // Group defines model for Group.
 type Group struct {
 	Id    string `json:"id,omitempty"`
-	Limit Limit  `json:"limit,omitempty"`
+	Limit *Limit `json:"limit,omitempty"`
 	Type  string `json:"type,omitempty"`
 }
 
 // Limit defines model for Limit.
 type Limit struct {
-	Metric ExternalMetric `json:"metric,omitempty"`
-	Sort   string         `json:"sort,omitempty"`
+	Metric *ExternalMetric `json:"metric,omitempty"`
+	Sort   string          `json:"sort,omitempty"`
 	// Value The number of items to show
 	Value int64 `json:"value,omitempty"`
 }
@@ -166,9 +166,9 @@ type ExternalSplit struct {
 	Id string `json:"id,omitempty"`
 
 	// IncludeOrigin if set, include the origin
-	IncludeOrigin bool           `json:"includeOrigin,omitempty"`
-	Mode          string         `json:"mode,omitempty"`
-	Origin        ExternalOrigin `json:"origin,omitempty"`
+	IncludeOrigin bool            `json:"includeOrigin"`
+	Mode          string          `json:"mode,omitempty"`
+	Origin        *ExternalOrigin `json:"origin,omitempty"`
 
 	// Targets Targets for the split
 	Targets []ExternalSplitTarget `json:"targets,omitempty"`
@@ -208,7 +208,7 @@ type ExternalSplitTarget struct {
 // If it is, then the range will be 16th and 17th
 type TimeSettings struct {
 	Amount         int64  `json:"amount,omitempty"`
-	IncludeCurrent bool   `json:"includeCurrent,omitempty"`
+	IncludeCurrent bool   `json:"includeCurrent"`
 	Mode           string `json:"mode,omitempty"`
 	Unit           string `json:"unit,omitempty"`
 }

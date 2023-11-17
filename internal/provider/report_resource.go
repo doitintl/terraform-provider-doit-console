@@ -42,9 +42,9 @@ type ExternalConfigModel struct {
 
 	// IncludePromotionalCredits Whether to include credits or not.
 	// If set, the report must use time interval “month”/”quarter”/”year”
-	IncludePromotionalCredits types.Bool          `tfsdk:"include_promotional_credits"`
-	Layout                    types.String        `tfsdk:"layout"`
-	Metric                    ExternalMetricModel `tfsdk:"metric"`
+	IncludePromotionalCredits types.Bool           `tfsdk:"include_promotional_credits"`
+	Layout                    types.String         `tfsdk:"layout"`
+	Metric                    *ExternalMetricModel `tfsdk:"metric"`
 
 	// MetricFilter {
 	// "metric": {
@@ -80,12 +80,12 @@ type AdvancedAnalysisModel struct {
 type GroupModel struct {
 	Id    types.String `tfsdk:"id"`
 	Type  types.String `tfsdk:"type"`
-	Limit LimitModel   `tfsdk:"limit"`
+	Limit *LimitModel  `tfsdk:"limit"`
 }
 
 type LimitModel struct {
-	Metric ExternalMetricModel `tfsdk:"metric"`
-	Sort   types.String        `tfsdk:"sort"`
+	Metric *ExternalMetricModel `tfsdk:"metric"`
+	Sort   types.String         `tfsdk:"sort"`
 	// Value The number of items to show
 	Value types.Int64 `tfsdk:"value"`
 }
@@ -107,9 +107,9 @@ type ExternalSplitModel struct {
 	Id types.String `tfsdk:"id"`
 
 	// IncludeOrigin if set, include the origin
-	IncludeOrigin types.Bool          `tfsdk:"include_origin"`
-	Mode          types.String        `tfsdk:"mode"`
-	Origin        ExternalOriginModel `tfsdk:"origin"`
+	IncludeOrigin types.Bool           `tfsdk:"include_origin"`
+	Mode          types.String         `tfsdk:"mode"`
+	Origin        *ExternalOriginModel `tfsdk:"origin"`
 
 	// Targets Targets for the split
 	Targets []ExternalSplitTargetModel `tfsdk:"targets"`
@@ -212,23 +212,23 @@ func (r *reportResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						Attributes: map[string]schema.Attribute{
 							"forecast": schema.BoolAttribute{
 								Description: "Advanced analysis toggles. Each of these can be set independently",
-								Optional:    true,
+								Required:    true,
 							},
 							"not_trending": schema.BoolAttribute{
 								Description: "",
-								Optional:    true,
+								Required:    true,
 							},
 							"trending_down": schema.BoolAttribute{
 								Description: "",
-								Optional:    true,
+								Required:    true,
 							},
 							"trending_up": schema.BoolAttribute{
 								Description: "",
-								Optional:    true,
+								Required:    true,
 							},
 						},
 						Description: "",
-						Optional:    true,
+						Required:    true,
 					},
 					"aggregation": schema.StringAttribute{
 						Description: "",
@@ -328,9 +328,9 @@ func (r *reportResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						},
 					},
 					"include_promotional_credits": schema.BoolAttribute{
-						Description: "Whether to include credits or not. "+
+						Description: "Whether to include credits or not. " +
 							"If set, the report must use time interval “month”/”quarter”/”year”",
-						Optional:    true,
+						Required: true,
 					},
 					"layout": schema.StringAttribute{
 						Description: "",
@@ -343,9 +343,9 @@ func (r *reportResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Optional:    true,
 							},
 							"value": schema.StringAttribute{
-								Description: "For basic metrics the value can be one of: [\"cost\", \"usage\", \"savings\" \n"+
-								"If using custom metrics, the value must refer to an existing custom or calculated metric id ",
-								Optional:    true,
+								Description: "For basic metrics the value can be one of: [\"cost\", \"usage\", \"savings\" \n" +
+									"If using custom metrics, the value must refer to an existing custom or calculated metric id ",
+								Optional: true,
 							},
 						},
 						Description: "",
@@ -470,7 +470,7 @@ func (r *reportResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			"name": schema.StringAttribute{
 				Description: "Report name",
-				Optional:    true,
+				Required:    true,
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "",
@@ -514,7 +514,7 @@ func (r *reportResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	// Retrieve values from plan
 	var plan reportResourceModel
-	log.Println("before getting plan")
+	log.Println("before getting plan 1")
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -522,15 +522,35 @@ func (r *reportResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	log.Println("after getting plan")
 	// Generate API request body from plan
-
+	log.Println(plan.Config)
 	config := ExternalConfig{}
-	advancedAnalysis := AdvancedAnalysis{
-		Forecast:     plan.Config.AdvancedAnalysis.Forecast.ValueBool(),
-		NotTrending:  plan.Config.AdvancedAnalysis.NotTrending.ValueBool(),
-		TrendingDown: plan.Config.AdvancedAnalysis.TrendingDown.ValueBool(),
-		TrendingUp:   plan.Config.AdvancedAnalysis.TrendingUp.ValueBool(),
-	}
-	config.AdvancedAnalysis = &advancedAnalysis
+	log.Println("1")
+
+	if plan.Config.AdvancedAnalysis != nil {
+		advancedAnalysis := AdvancedAnalysis{
+			Forecast:     plan.Config.AdvancedAnalysis.Forecast.ValueBool(),
+			NotTrending:  plan.Config.AdvancedAnalysis.NotTrending.ValueBool(),
+			TrendingDown: plan.Config.AdvancedAnalysis.TrendingDown.ValueBool(),
+			TrendingUp:   plan.Config.AdvancedAnalysis.TrendingUp.ValueBool(),
+		}
+		config.AdvancedAnalysis = &advancedAnalysis
+	} /*else {
+		// It needs to be initialized by default because the api return this value
+		// even  if it was not provided when created and the terraform plugin complain
+		// because when creating the resource was null but when read it is not.
+		advancedAnalysis := AdvancedAnalysis{
+			Forecast:     false,
+			NotTrending:  false,
+			TrendingDown: false,
+			TrendingUp:   false,
+		}
+		config.AdvancedAnalysis = &advancedAnalysis
+	}*/
+	log.Println("2")
+	log.Println(config.AdvancedAnalysis)
+	config.Aggregation = plan.Config.Aggregation.ValueString()
+	config.Currency = plan.Config.Currency.ValueString()
+
 	var dimensions []Dimension
 	for _, dimension := range plan.Config.Dimensions {
 		dimension := Dimension{
@@ -540,78 +560,80 @@ func (r *reportResource) Create(ctx context.Context, req resource.CreateRequest,
 		dimensions = append(dimensions, dimension)
 	}
 	config.Dimensions = dimensions
-	var filters []ExternalConfigFilter
-
-	for _, filter := range plan.Config.Filters {
-		var values []string
-		for _, value := range filter.Values {
-			values = append(values, value.ValueString())
-		}
-		filter := ExternalConfigFilter{
-			Id:      filter.Id.ValueString(),
-			Inverse: filter.Inverse.ValueBool(),
-			Type:    filter.Type.ValueString(),
-			Values:  values,
-		}
-		filters = append(filters, filter)
-	}
-	config.Filters = filters
-	var groups []Group
-	for _, group := range plan.Config.Group {
-		limit := Limit{
-			Metric: ExternalMetric{
-				Type:  group.Limit.Metric.Type.ValueString(),
-				Value: group.Limit.Metric.Value.ValueString(),
-			},
-			Sort:  group.Limit.Sort.ValueString(),
-			Value: group.Limit.Value.ValueInt64(),
-		}
-		groups = append(groups, Group{
-			Id:    group.Id.ValueString(),
-			Type:  group.Type.ValueString(),
-			Limit: limit,
-		})
-	}
-	config.Group = groups
-	var splits []ExternalSplit
-	for _, split := range plan.Config.Splits {
-		origin := ExternalOrigin{
-			Id:   split.Origin.Id.ValueString(),
-			Type: split.Origin.Type.ValueString(),
-		}
-		targets := []ExternalSplitTarget{}
-		for _, target := range split.Targets {
-			target := ExternalSplitTarget{
-				Id:    target.Id.ValueString(),
-				Type:  target.Type.ValueString(),
-				Value: target.Value.ValueFloat64(),
+	if plan.Config.Filters != nil {
+		var filters []ExternalConfigFilter
+		log.Println("3")
+		for _, filter := range plan.Config.Filters {
+			var values []string
+			for _, value := range filter.Values {
+				values = append(values, value.ValueString())
 			}
-			targets = append(targets, target)
+			log.Println(filter)
+			log.Println(filter.Inverse.ValueBool())
+			filter := ExternalConfigFilter{
+				Id:      filter.Id.ValueString(),
+				Inverse: filter.Inverse.ValueBool(),
+				Type:    filter.Type.ValueString(),
+				Values:  values,
+			}
+			log.Println(filter)
+			filters = append(filters, filter)
 		}
-		split := ExternalSplit{
-			Id:            split.Id.ValueString(),
-			IncludeOrigin: split.IncludeOrigin.ValueBool(),
-			Mode:          split.Mode.ValueString(),
-			Origin:        origin,
-			Targets:       targets,
-			Type:          split.Type.ValueString(),
+		log.Println("4")
+		config.Filters = filters
+	}
+	log.Println("DisplayValues")
+	log.Println(plan.Config.DisplayValues)
+	config.DisplayValues = plan.Config.DisplayValues.ValueString()
+	if plan.Config.Group != nil {
+		var groups []Group
+		for _, group := range plan.Config.Group {
+			if group.Limit != nil {
+				log.Println("group.Limit")
+				emetric := ExternalMetric{
+					Type:  group.Limit.Metric.Type.ValueString(),
+					Value: group.Limit.Metric.Value.ValueString(),
+				}
+				limit := Limit{
+					Metric: &emetric,
+					Sort:   group.Limit.Sort.ValueString(),
+					Value:  group.Limit.Value.ValueInt64(),
+				}
+				groups = append(groups, Group{
+					Id:    group.Id.ValueString(),
+					Type:  group.Type.ValueString(),
+					Limit: &limit,
+				})
+			} else {
+				log.Println("no group.Limit")
+				groups = append(groups, Group{
+					Id:   group.Id.ValueString(),
+					Type: group.Type.ValueString(),
+				})
+			}
 		}
-		splits = append(splits, split)
+		config.Group = groups
 	}
-	config.Splits = splits
-	timeRange := TimeSettings{
-		Amount:         plan.Config.TimeRange.Amount.ValueInt64(),
-		IncludeCurrent: plan.Config.TimeRange.IncludeCurrent.ValueBool(),
-		Mode:           plan.Config.TimeRange.Mode.ValueString(),
-		Unit:           plan.Config.TimeRange.Unit.ValueString(),
-	}
-	if plan.Config.TimeRange != nil {
-		config.TimeRange = &timeRange
-	}
+	log.Println("after group")
+	// It needs to be initialized by default because the api return this value
+	// even  if it was not provided when created and the terraform plugin complain
+	// because when creating the resource was null but when read it is not.
+	println(plan.Config.IncludePromotionalCredits.ValueBool())
+	if !plan.Config.IncludePromotionalCredits.IsNull() {
+		config.IncludePromotionalCredits = plan.Config.IncludePromotionalCredits.ValueBool()
+	} /*else {
+		config.IncludePromotionalCredits = false
+	}*/
 
+	config.Layout = plan.Config.Layout.ValueString()
+	if plan.Config.Metric != nil {
+		metric := ExternalMetric{
+			Type:  plan.Config.Metric.Type.ValueString(),
+			Value: plan.Config.Metric.Value.ValueString(),
+		}
+		config.Metric = &metric
+	}
 	var metricFilter ExternalConfigMetricFilter
-	log.Println("plan.Config.MetricFilter")
-	log.Println(plan.Config.MetricFilter)
 	if plan.Config.MetricFilter != nil {
 		var values []float64
 		for _, value := range plan.Config.MetricFilter.Values {
@@ -629,34 +651,59 @@ func (r *reportResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		config.MetricFilter = &metricFilter
 	}
-
-	metric := ExternalMetric{
-		Type:  plan.Config.Metric.Type.ValueString(),
-		Value: plan.Config.Metric.Value.ValueString(),
+	log.Println("8")
+	if plan.Config.Splits != nil {
+		var splits []ExternalSplit
+		for _, split := range plan.Config.Splits {
+			origin := ExternalOrigin{
+				Id:   split.Origin.Id.ValueString(),
+				Type: split.Origin.Type.ValueString(),
+			}
+			targets := []ExternalSplitTarget{}
+			for _, target := range split.Targets {
+				target := ExternalSplitTarget{
+					Id:    target.Id.ValueString(),
+					Type:  target.Type.ValueString(),
+					Value: target.Value.ValueFloat64(),
+				}
+				targets = append(targets, target)
+			}
+			split := ExternalSplit{
+				Id:            split.Id.ValueString(),
+				IncludeOrigin: split.IncludeOrigin.ValueBool(),
+				Mode:          split.Mode.ValueString(),
+				Origin:        &origin,
+				Targets:       targets,
+				Type:          split.Type.ValueString(),
+			}
+			splits = append(splits, split)
+		}
+		config.Splits = splits
 	}
-	config.Metric = metric
-	/*config := ExternalConfig{
-		AdvancedAnalysis:          advancedAnalysis,
-		Aggregation:               plan.Config.Aggregation.ValueString(),
-		Currency:                  plan.Config.Currency.ValueString(),
-		Dimensions:                dimensions,
-		Filters:                   filters,
-		Group:                     groups,
-		DisplayValues:             plan.Config.DisplayValues.ValueString(),
-		IncludePromotionalCredits: plan.Config.IncludePromotionalCredits.ValueBool(),
-		Layout:                    plan.Config.Layout.ValueString(),
-		Metric:                    metric,
-		Splits:                    splits,
-		TimeRange:                 timeRange,
-		TimeInterval:              plan.Config.TimeInterval.ValueString(),
-	}*/
+	log.Println("61")
+	log.Println(plan.Config.Splits)
+	log.Println("6")
+	log.Println(plan.Config.TimeRange)
+	config.TimeInterval = plan.Config.TimeInterval.ValueString()
+	if plan.Config.TimeRange != nil {
+		timeRange := TimeSettings{
+			Amount:         plan.Config.TimeRange.Amount.ValueInt64(),
+			IncludeCurrent: plan.Config.TimeRange.IncludeCurrent.ValueBool(),
+			Mode:           plan.Config.TimeRange.Mode.ValueString(),
+			Unit:           plan.Config.TimeRange.Unit.ValueString(),
+		}
+		config.TimeRange = &timeRange
+	}
+	log.Println("7")
+	log.Println(plan.Description)
 	report := Report{
 		Config:      config,
 		Description: plan.Description.ValueString(),
 		Id:          plan.Id.ValueString(),
 		Name:        plan.Name.ValueString(),
 	}
-
+	log.Println("AdvancedAnalysis")
+	log.Println(report.Config.AdvancedAnalysis)
 	log.Println("before creating report")
 	// Create new report
 	budgeResponse, err := r.client.CreateReport(report)
@@ -676,6 +723,10 @@ func (r *reportResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
+
+	log.Println("state after creating report---------------------------------------------------")
+	log.Println(plan)
+	log.Println(plan.Config.AdvancedAnalysis)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -713,68 +764,104 @@ func (r *reportResource) Read(ctx context.Context, req resource.ReadRequest, res
 	state.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	log.Print("b")
 	if report.Config.AdvancedAnalysis != nil {
-		state.Config.AdvancedAnalysis.Forecast = types.BoolValue(report.Config.AdvancedAnalysis.Forecast)
-		state.Config.AdvancedAnalysis.NotTrending = types.BoolValue(report.Config.AdvancedAnalysis.NotTrending)
-		state.Config.AdvancedAnalysis.TrendingDown = types.BoolValue(report.Config.AdvancedAnalysis.TrendingDown)
-		state.Config.AdvancedAnalysis.TrendingUp = types.BoolValue(report.Config.AdvancedAnalysis.TrendingUp)
+		log.Print(report.Config.AdvancedAnalysis)
+		log.Print(report.Config.AdvancedAnalysis.Forecast)
+		log.Print(report.Config.AdvancedAnalysis.NotTrending)
+		advancedAnalysisModel := AdvancedAnalysisModel{
+			Forecast:     types.BoolValue(report.Config.AdvancedAnalysis.Forecast),
+			NotTrending:  types.BoolValue(report.Config.AdvancedAnalysis.NotTrending),
+			TrendingDown: types.BoolValue(report.Config.AdvancedAnalysis.TrendingDown),
+			TrendingUp:   types.BoolValue(report.Config.AdvancedAnalysis.TrendingUp),
+		}
+		state.Config.AdvancedAnalysis = &advancedAnalysisModel
+		log.Print(state.Config.AdvancedAnalysis)
+	} else {
+		state.Config.AdvancedAnalysis = nil
 	}
 	log.Print("c")
 	state.Config.Aggregation = types.StringValue(report.Config.Aggregation)
 	state.Config.Currency = types.StringValue(report.Config.Currency)
 	state.Config.DisplayValues = types.StringValue(report.Config.DisplayValues)
 	state.Config.IncludePromotionalCredits = types.BoolValue(report.Config.IncludePromotionalCredits)
+	log.Print(state.Config.IncludePromotionalCredits)
 	state.Config.Layout = types.StringValue(report.Config.Layout)
 	state.Config.TimeInterval = types.StringValue(report.Config.TimeInterval)
-	log.Print("c")
+	log.Print("c1")
 	if report.Config.TimeRange != nil {
-		state.Config.TimeRange.Amount = types.Int64Value(report.Config.TimeRange.Amount)
-		state.Config.TimeRange.IncludeCurrent = types.BoolValue(report.Config.TimeRange.IncludeCurrent)
-		state.Config.TimeRange.Mode = types.StringValue(report.Config.TimeRange.Mode)
-		state.Config.TimeRange.Unit = types.StringValue(report.Config.TimeRange.Unit)
+		state.Config.TimeRange = &TimeSettingsModel{
+			Amount:         types.Int64Value(report.Config.TimeRange.Amount),
+			IncludeCurrent: types.BoolValue(report.Config.TimeRange.IncludeCurrent),
+			Mode:           types.StringValue(report.Config.TimeRange.Mode),
+			Unit:           types.StringValue(report.Config.TimeRange.Unit),
+		}
 	}
 	log.Print("d")
 	state.Config.Metric.Type = types.StringValue(report.Config.Metric.Type)
 	state.Config.Metric.Value = types.StringValue(report.Config.Metric.Value)
 	log.Print("e")
 	if report.Config.MetricFilter != nil {
-		state.Config.MetricFilter.Operator = types.StringValue(report.Config.MetricFilter.Operator)
-		state.Config.MetricFilter.Metric.Type = types.StringValue(report.Config.MetricFilter.Metric.Type)
-		state.Config.MetricFilter.Metric.Value = types.StringValue(report.Config.MetricFilter.Metric.Value)
-		state.Config.MetricFilter.Values = []types.Float64{}
-		for _, value := range report.Config.MetricFilter.Values {
-			state.Config.MetricFilter.Values = append(state.Config.MetricFilter.Values, types.Float64Value(value))
+		metric := ExternalMetricModel{
+			Type:  types.StringValue(report.Config.MetricFilter.Metric.Type),
+			Value: types.StringValue(report.Config.MetricFilter.Metric.Value),
 		}
+		values := []types.Float64{}
+		for _, value := range report.Config.MetricFilter.Values {
+			values = append(values, types.Float64Value(value))
+		}
+		state.Config.MetricFilter = &ExternalConfigMetricFilterModel{
+			Operator: types.StringValue(report.Config.MetricFilter.Operator),
+			Metric:   &metric,
+			Values:   values,
+		}
+
 	}
 	log.Print("f")
-	state.Config.Dimensions = []DimensionModel{}
-	for _, dimension := range report.Config.Dimensions {
-		state.Config.Dimensions = append(state.Config.Dimensions, DimensionModel{
-			Id:   types.StringValue(dimension.Id),
-			Type: types.StringValue(dimension.Type),
-		})
+	if report.Config.Dimensions != nil {
+		state.Config.Dimensions = []DimensionModel{}
+		for _, dimension := range report.Config.Dimensions {
+			state.Config.Dimensions = append(state.Config.Dimensions, DimensionModel{
+				Id:   types.StringValue(dimension.Id),
+				Type: types.StringValue(dimension.Type),
+			})
+		}
 	}
 	log.Print("g")
-	state.Config.Filters = []ExternalConfigFilterModel{}
-	for _, filter := range report.Config.Filters {
-		state.Config.Filters = append(state.Config.Filters, ExternalConfigFilterModel{
-			Id:   types.StringValue(filter.Id),
-			Type: types.StringValue(filter.Type),
-		})
+	if report.Config.Filters != nil {
+		state.Config.Filters = []ExternalConfigFilterModel{}
+		for _, filter := range report.Config.Filters {
+			values := []types.String{}
+			for _, value := range filter.Values {
+				values = append(values, types.StringValue(value))
+			}
+			log.Print(values)
+			log.Print(filter.Inverse)
+			state.Config.Filters = append(state.Config.Filters, ExternalConfigFilterModel{
+				Id:      types.StringValue(filter.Id),
+				Type:    types.StringValue(filter.Type),
+				Inverse: types.BoolValue(filter.Inverse),
+				Values:  values,
+			})
+		}
 	}
 	log.Print("h")
-	state.Config.Group = []GroupModel{}
-	for _, group := range report.Config.Group {
-		state.Config.Group = append(state.Config.Group, GroupModel{
-			Id:   types.StringValue(group.Id),
-			Type: types.StringValue(group.Type),
-		})
+	if report.Config.Group != nil {
+		state.Config.Group = []GroupModel{}
+		for _, group := range report.Config.Group {
+			state.Config.Group = append(state.Config.Group, GroupModel{
+				Id:   types.StringValue(group.Id),
+				Type: types.StringValue(group.Type),
+			})
+		}
 	}
-	state.Config.Splits = []ExternalSplitModel{}
-	for _, split := range report.Config.Splits {
-		state.Config.Splits = append(state.Config.Splits, ExternalSplitModel{
-			Id:   types.StringValue(split.Id),
-			Type: types.StringValue(split.Type),
-		})
+
+	if report.Config.Splits != nil {
+		state.Config.Splits = []ExternalSplitModel{}
+		for _, split := range report.Config.Splits {
+			state.Config.Splits = append(state.Config.Splits, ExternalSplitModel{
+				Id:   types.StringValue(split.Id),
+				Type: types.StringValue(split.Type),
+			})
+		}
 	}
 	log.Print("i")
 	// Set refreshed state
@@ -810,10 +897,19 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 	report.Description = plan.Description.ValueString()
 	report.Name = plan.Name.ValueString()
 	if report.Config.AdvancedAnalysis != nil {
-		report.Config.AdvancedAnalysis.Forecast = plan.Config.AdvancedAnalysis.Forecast.ValueBool()
-		report.Config.AdvancedAnalysis.NotTrending = plan.Config.AdvancedAnalysis.NotTrending.ValueBool()
-		report.Config.AdvancedAnalysis.TrendingDown = plan.Config.AdvancedAnalysis.TrendingDown.ValueBool()
-		report.Config.AdvancedAnalysis.TrendingUp = plan.Config.AdvancedAnalysis.TrendingUp.ValueBool()
+		report.Config.AdvancedAnalysis = &AdvancedAnalysis{
+			Forecast:     plan.Config.AdvancedAnalysis.Forecast.ValueBool(),
+			NotTrending:  plan.Config.AdvancedAnalysis.NotTrending.ValueBool(),
+			TrendingDown: plan.Config.AdvancedAnalysis.TrendingDown.ValueBool(),
+			TrendingUp:   plan.Config.AdvancedAnalysis.TrendingUp.ValueBool(),
+		}
+	} else {
+		report.Config.AdvancedAnalysis = &AdvancedAnalysis{
+			Forecast:     false,
+			NotTrending:  false,
+			TrendingDown: false,
+			TrendingUp:   false,
+		}
 	}
 	report.Config.Aggregation = plan.Config.Aggregation.ValueString()
 	report.Config.Currency = plan.Config.Currency.ValueString()
@@ -824,7 +920,10 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 			Type: dimension.Type.ValueString(),
 		})
 	}
+
 	report.Config.DisplayValues = plan.Config.DisplayValues.ValueString()
+	log.Println("plan.Config.Filters")
+	log.Println(plan.Config.Filters)
 	for _, filter := range plan.Config.Filters {
 		var values []string
 		for _, value := range filter.Values {
@@ -839,25 +938,44 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 	report.Config.Group = []Group{}
 	for _, group := range plan.Config.Group {
-		limit := Limit{
-			Metric: ExternalMetric{
+		if group.Limit != nil {
+			emetric := ExternalMetric{
 				Type:  group.Limit.Metric.Type.ValueString(),
 				Value: group.Limit.Metric.Value.ValueString(),
-			},
-			Sort:  group.Limit.Sort.ValueString(),
-			Value: group.Limit.Value.ValueInt64(),
+			}
+			limit := Limit{
+				Metric: &emetric,
+				Sort:   group.Limit.Sort.ValueString(),
+				Value:  group.Limit.Value.ValueInt64(),
+			}
+			report.Config.Group = append(report.Config.Group, Group{
+				Id:    group.Id.ValueString(),
+				Type:  group.Type.ValueString(),
+				Limit: &limit,
+			})
+		} else {
+			report.Config.Group = append(report.Config.Group, Group{
+				Id:   group.Id.ValueString(),
+				Type: group.Type.ValueString(),
+			})
 		}
-		report.Config.Group = append(report.Config.Group, Group{
-			Id:    group.Id.ValueString(),
-			Type:  group.Type.ValueString(),
-			Limit: limit,
-		})
 	}
-	report.Config.IncludePromotionalCredits = plan.Config.IncludePromotionalCredits.ValueBool()
+	if !plan.Config.IncludePromotionalCredits.IsNull() {
+		report.Config.IncludePromotionalCredits = plan.Config.IncludePromotionalCredits.ValueBool()
+	} else {
+		report.Config.IncludePromotionalCredits = false
+	}
 	report.Config.Layout = plan.Config.Layout.ValueString()
-	report.Config.Metric.Type = plan.Config.Metric.Type.ValueString()
-	report.Config.Metric.Value = plan.Config.Metric.Value.ValueString()
+	if plan.Config.Metric != nil {
+		externalMetric := ExternalMetric{
+			Type:  plan.Config.Metric.Type.ValueString(),
+			Value: plan.Config.Metric.Value.ValueString(),
+		}
+		report.Config.Metric = &externalMetric
+	}
+
 	if report.Config.MetricFilter != nil {
+		metricFilter := ExternalConfigMetricFilter{}
 		report.Config.MetricFilter.Operator = plan.Config.MetricFilter.Operator.ValueString()
 		report.Config.MetricFilter.Metric.Type = plan.Config.MetricFilter.Metric.Type.ValueString()
 		report.Config.MetricFilter.Metric.Value = plan.Config.MetricFilter.Metric.Value.ValueString()
@@ -865,29 +983,34 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 		for _, value := range plan.Config.MetricFilter.Values {
 			report.Config.MetricFilter.Values = append(report.Config.MetricFilter.Values, value.ValueFloat64())
 		}
+		report.Config.MetricFilter = &metricFilter
 	}
-
 	report.Config.Splits = []ExternalSplit{}
 	for _, split := range plan.Config.Splits {
-		origin := ExternalOrigin{
-			Id:   split.Origin.Id.ValueString(),
-			Type: split.Origin.Type.ValueString(),
-		}
-		var targets []ExternalSplitTarget
-		for _, target := range split.Targets {
-			target := ExternalSplitTarget{
-				Id:    target.Id.ValueString(),
-				Type:  target.Type.ValueString(),
-				Value: target.Value.ValueFloat64(),
+		esplit := ExternalSplit{}
+		if split.Origin != nil {
+			origin := ExternalOrigin{
+				Id:   split.Origin.Id.ValueString(),
+				Type: split.Origin.Type.ValueString(),
 			}
-			targets = append(targets, target)
+			esplit.Origin = &origin
 		}
-		report.Config.Splits = append(report.Config.Splits, ExternalSplit{
-			Id:      split.Id.ValueString(),
-			Type:    split.Type.ValueString(),
-			Origin:  origin,
-			Targets: targets,
-		})
+		if split.Targets != nil {
+
+			var targets []ExternalSplitTarget
+			for _, target := range split.Targets {
+				target := ExternalSplitTarget{
+					Id:    target.Id.ValueString(),
+					Type:  target.Type.ValueString(),
+					Value: target.Value.ValueFloat64(),
+				}
+				targets = append(targets, target)
+			}
+			esplit.Targets = targets
+		}
+		esplit.Id = split.Id.ValueString()
+		esplit.IncludeOrigin = split.IncludeOrigin.ValueBool()
+		report.Config.Splits = append(report.Config.Splits, esplit)
 	}
 	report.Config.TimeInterval = plan.Config.TimeInterval.ValueString()
 	if report.Config.TimeRange != nil {
@@ -924,10 +1047,12 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 	plan.Name = types.StringValue(reportResponse.Name)
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 	if plan.Config.AdvancedAnalysis != nil {
-		plan.Config.AdvancedAnalysis.Forecast = types.BoolValue(reportResponse.Config.AdvancedAnalysis.Forecast)
-		plan.Config.AdvancedAnalysis.NotTrending = types.BoolValue(reportResponse.Config.AdvancedAnalysis.NotTrending)
-		plan.Config.AdvancedAnalysis.TrendingDown = types.BoolValue(reportResponse.Config.AdvancedAnalysis.TrendingDown)
-		plan.Config.AdvancedAnalysis.TrendingUp = types.BoolValue(reportResponse.Config.AdvancedAnalysis.TrendingUp)
+		plan.Config.AdvancedAnalysis = &AdvancedAnalysisModel{
+			Forecast:     types.BoolValue(reportResponse.Config.AdvancedAnalysis.Forecast),
+			NotTrending:  types.BoolValue(reportResponse.Config.AdvancedAnalysis.NotTrending),
+			TrendingDown: types.BoolValue(reportResponse.Config.AdvancedAnalysis.TrendingDown),
+			TrendingUp:   types.BoolValue(reportResponse.Config.AdvancedAnalysis.TrendingUp),
+		}
 	}
 	plan.Config.Aggregation = types.StringValue(reportResponse.Config.Aggregation)
 	plan.Config.Currency = types.StringValue(reportResponse.Config.Currency)
@@ -936,20 +1061,28 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 	plan.Config.Layout = types.StringValue(reportResponse.Config.Layout)
 	plan.Config.TimeInterval = types.StringValue(reportResponse.Config.TimeInterval)
 	if plan.Config.TimeRange != nil {
-		plan.Config.TimeRange.Amount = types.Int64Value(reportResponse.Config.TimeRange.Amount)
-		plan.Config.TimeRange.IncludeCurrent = types.BoolValue(reportResponse.Config.TimeRange.IncludeCurrent)
-		plan.Config.TimeRange.Mode = types.StringValue(reportResponse.Config.TimeRange.Mode)
-		plan.Config.TimeRange.Unit = types.StringValue(reportResponse.Config.TimeRange.Unit)
+		plan.Config.TimeRange = &TimeSettingsModel{
+			Amount:         types.Int64Value(reportResponse.Config.TimeRange.Amount),
+			IncludeCurrent: types.BoolValue(reportResponse.Config.TimeRange.IncludeCurrent),
+			Mode:           types.StringValue(reportResponse.Config.TimeRange.Mode),
+			Unit:           types.StringValue(reportResponse.Config.TimeRange.Unit),
+		}
 	}
 	plan.Config.Metric.Type = types.StringValue(reportResponse.Config.Metric.Type)
 	plan.Config.Metric.Value = types.StringValue(reportResponse.Config.Metric.Value)
 	if plan.Config.MetricFilter != nil {
-		plan.Config.MetricFilter.Operator = types.StringValue(reportResponse.Config.MetricFilter.Operator)
-		plan.Config.MetricFilter.Metric.Type = types.StringValue(reportResponse.Config.MetricFilter.Metric.Type)
-		plan.Config.MetricFilter.Metric.Value = types.StringValue(reportResponse.Config.MetricFilter.Metric.Value)
-		plan.Config.MetricFilter.Values = []types.Float64{}
+		metric := ExternalMetricModel{
+			Type:  types.StringValue(reportResponse.Config.MetricFilter.Metric.Type),
+			Value: types.StringValue(reportResponse.Config.MetricFilter.Metric.Value),
+		}
+		values := []types.Float64{}
 		for _, value := range reportResponse.Config.MetricFilter.Values {
 			plan.Config.MetricFilter.Values = append(plan.Config.MetricFilter.Values, types.Float64Value(value))
+		}
+		plan.Config.MetricFilter = &ExternalConfigMetricFilterModel{
+			Operator: types.StringValue(reportResponse.Config.MetricFilter.Operator),
+			Metric:   &metric,
+			Values:   values,
 		}
 	}
 
@@ -963,9 +1096,15 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if plan.Config.Filters != nil {
 		plan.Config.Filters = []ExternalConfigFilterModel{}
 		for _, filter := range reportResponse.Config.Filters {
+			values := []types.String{}
+			for _, value := range filter.Values {
+				values = append(values, types.StringValue(value))
+			}
 			plan.Config.Filters = append(plan.Config.Filters, ExternalConfigFilterModel{
-				Id:   types.StringValue(filter.Id),
-				Type: types.StringValue(filter.Type),
+				Id:      types.StringValue(filter.Id),
+				Type:    types.StringValue(filter.Type),
+				Inverse: types.BoolValue(filter.Inverse),
+				Values:  values,
 			})
 		}
 	}

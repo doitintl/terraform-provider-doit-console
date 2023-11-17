@@ -1,145 +1,61 @@
 {
-    {tftypes.Object[
-            "components":tftypes.List[tftypes.Object[
-                    "key":tftypes.String,
-                    "type":tftypes.String,
-                    "values":tftypes.List[tftypes.String
-                    ]
+    "id": "CPTB67hKNRBWFe7zqgCL",
+    "name": "test8",
+    "description": "test",
+    "config": {
+        "metric": {
+            "type": "basic",
+            "value": "cost"
+        },
+        "aggregation": "total",
+        "advancedAnalysis": {
+            "trendingUp": false,
+            "trendingDown": false,
+            "notTrending": false,
+            "forecast": false
+        },
+        "timeInterval": "month",
+        "dimensions": [
+            {
+                "id": "year",
+                "type": "datetime"
+            },
+            {
+                "id": "month",
+                "type": "datetime"
+            }
+        ],
+        "timeRange": {
+            "mode": "last",
+            "amount": 12,
+            "includeCurrent": true,
+            "unit": "month"
+        },
+        "includePromotionalCredits": false,
+        "filters": [
+            {
+                "id": "attribution",
+                "type": "attribution",
+                "inverse": false,
+                "values": [
+                    "1CE699ZdwN5CRBw0tInY"
                 ]
-            ],
-            "description":tftypes.String,
-            "formula":tftypes.String,
-            "id":tftypes.String,
-            "last_updated":tftypes.String,
-            "name":tftypes.String
-        ]<"components":tftypes.List[tftypes.Object[
-                "key":tftypes.String,
-                "type":tftypes.String,
-                "values":tftypes.List[tftypes.String
-                ]
-            ]
-        ]<tftypes.Object[
-            "key":tftypes.String,
-            "type":tftypes.String,
-            "values":tftypes.List[tftypes.String
-            ]
-        ]<"key":tftypes.String<"iris_location">,
-        "type":tftypes.String<"label">,
-        "values":tftypes.List[tftypes.String
-        ]<tftypes.String<"us">>>>,
-        "description":tftypes.String<"attritestdiana">,
-        "formula":tftypes.String<"A">,
-        "id":tftypes.String<null>,
-        "last_updated":tftypes.String<null>,
-        "name":tftypes.String<"attritestnewname">> {map[components: {
-                    {map[key: {<nil> true false false false    [] [] <nil>
-                            } type: {<nil> true false false false    [] [] <nil>
-                            } values: {basetypes.StringType <nil> true false false false    [] [] <nil>
-                            }
-                        ] <nil> [] []
-                    } <nil> true false false false    [] [] <nil>
-                } description: {<nil> true false false false    [] [] <nil>
-                } formula: {<nil> true false false false    [] [] <nil>
-                } id: {<nil> false false true false    [] [] <nil>
-                } last_updated: {<nil> false false true false    [] [] <nil>
-                } name: {<nil> true false false false    [] [] <nil>
-                }
-            ] map[]    0
-        }
-    } {tftypes.Object[
-            "components":tftypes.List[tftypes.Object[
-                    "key":tftypes.String,
-                    "type":tftypes.String,
-                    "values":tftypes.List[tftypes.String
-                    ]
-                ]
-            ],
-            "description":tftypes.String,
-            "formula":tftypes.String,
-            "id":tftypes.String,
-            "last_updated":tftypes.String,
-            "name":tftypes.String
-        ]<"components":tftypes.List[tftypes.Object[
-                "key":tftypes.String,
-                "type":tftypes.String,
-                "values":tftypes.List[tftypes.String
-                ]
-            ]
-        ]<tftypes.Object[
-            "key":tftypes.String,
-            "type":tftypes.String,
-            "values":tftypes.List[tftypes.String
-            ]
-        ]<"key":tftypes.String<"iris_location">,
-        "type":tftypes.String<"label">,
-        "values":tftypes.List[tftypes.String
-        ]<tftypes.String<"us">>>>,
-        "description":tftypes.String<"attritestdiana">,
-        "formula":tftypes.String<"A">,
-        "id":tftypes.String<unknown>,
-        "last_updated":tftypes.String<unknown>,
-        "name":tftypes.String<"attritestnewname">> {map[components: {
-                    {map[key: {<nil> true false false false    [] [] <nil>
-                            } type: {<nil> true false false false    [] [] <nil>
-                            } values: {basetypes.StringType <nil> true false false false    [] [] <nil>
-                            }
-                        ] <nil> [] []
-                    } <nil> true false false false    [] [] <nil>
-                } description: {<nil> true false false false    [] [] <nil>
-                } formula: {<nil> true false false false    [] [] <nil>
-                } id: {<nil> false false true false    [] [] <nil>
-                } last_updated: {<nil> false false true false    [] [] <nil>
-                } name: {<nil> true false false false    [] [] <nil>
-                }
-            ] map[]    0
-        }
-    } {tftypes.Object[
-            "components":tftypes.List[tftypes.Object[
-                    "key":tftypes.String,
-                    "type":tftypes.String,
-                    "values":tftypes.List[tftypes.String
-                    ]
-                ]
-            ],
-            "description":tftypes.String,
-            "formula":tftypes.String,
-            "id":tftypes.String,
-            "last_updated":tftypes.String,
-            "name":tftypes.String
-        ]<"components":tftypes.List[tftypes.Object[
-                "key":tftypes.String,
-                "type":tftypes.String,
-                "values":tftypes.List[tftypes.String
-                ]
-            ]
-        ]<tftypes.Object[
-            "key":tftypes.String,
-            "type":tftypes.String,
-            "values":tftypes.List[tftypes.String
-            ]
-        ]<"key":tftypes.String<"iris_location">,
-        "type":tftypes.String<"label">,
-        "values":tftypes.List[tftypes.String
-        ]<tftypes.String<"us">>>>,
-        "description":tftypes.String<"attritestdiana">,
-        "formula":tftypes.String<"A">,
-        "id":tftypes.String<"hV6TzvZMOhmao3jNzwTB">,
-        "last_updated":tftypes.String<"Wednesday, 04-Oct-23 12:17:22 AEST">,
-        "name":tftypes.String<"attritestdiana">> {map[components: {
-                    {map[key: {<nil> true false false false    [] [] <nil>
-                            } type: {<nil> true false false false    [] [] <nil>
-                            } values: {basetypes.StringType <nil> true false false false    [] [] <nil>
-                            }
-                        ] <nil> [] []
-                    } <nil> true false false false    [] [] <nil>
-                } description: {<nil> true false false false    [] [] <nil>
-                } formula: {<nil> true false false false    [] [] <nil>
-                } id: {<nil> false false true false    [] [] <nil>
-                } last_updated: {<nil> false false true false    [] [] <nil>
-                } name: {<nil> true false false false    [] [] <nil>
-                }
-            ] map[]    0
-        }
-    } {invalid typeless tftypes.Value<> <nil>
-    } 0x14000072420
+            }
+        ],
+        "group": [
+            {
+                "id": "BSQZmvX6hvuKGPDHX7R3",
+                "type": "attribution_group",
+                "limit": null
+            },
+            {
+                "id": "cloud_provider",
+                "type": "fixed",
+                "limit": null
+            }
+        ],
+        "layout": "table",
+        "displayValues": "actuals_only",
+        "currency": "USD"
+    }
 }
