@@ -2,7 +2,7 @@ terraform {
   required_providers {
     doit-console = {
       source  = "doitntl/doit-console"
-      version = "0.1.4"
+      version = "0.2.1"
     }
   }
 }
