@@ -1,20 +1,13 @@
 terraform {
   required_providers {
     doit-console = {
-      source  = "doitntl/doit-console"
+      source  = "doitintl/doit-console"
       version = "0.2.1"
     }
   }
 }
 
-resource "doit-console_attribution" "attri" {
-  name        = "attritestnewname9"
-  description = "attritestdiana8"
-  formula     = "A"
-  components  = [{ type = "label", key = "iris_location", values = ["us"] }]
-}
-
-resource "doit-console_report" "test3" {
+resource "doit-console_report" "my-report" {
   name        = "test10"
   description = "test10"
   config = {

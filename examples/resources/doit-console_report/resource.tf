@@ -1,19 +1,20 @@
-resource "doit_report" "my_report" {
-  name        = "Test Terraform update"
-  description = ""
+resource "doit-console_report" "my-report" {
+  name        = "test10"
+  description = "test10"
   config = {
     metric = {
       type  = "basic"
       value = "cost"
     }
-    aggregation = "total"
+    include_promotional_credits = false
     advanced_analysis = {
-      forecast      = false
-      not_trending  = false
+      trending_up   = false
       trending_down = false
-      trending_up   = true
+      not_trending  = false
+      forecast      = false
     }
-    time_interval = "day"
+    aggregation   = "total"
+    time_interval = "month"
     dimensions = [
       {
         id   = "year"
@@ -22,21 +23,36 @@ resource "doit_report" "my_report" {
       {
         id   = "month"
         type = "datetime"
-      },
-      {
-        id   = "day"
-        type = "datetime"
-      },
+      }
     ]
     time_range = {
-      amount          = 7
-      include_current = false
       mode            = "last"
-      unit            = "day"
+      amount          = 12
+      include_current = true
+      unit            = "month"
     }
-    include_promotional_credits = false
-    layout                      = "stacked_column_chart"
-    display_values              = "actuals_only"
-    currency                    = "USD"
+    filters = [
+      {
+        inverse = false
+        id      = "attribution"
+        type    = "attribution"
+        values = [
+          "1CE699ZdwN5CRBw0tInY"
+        ]
+      }
+    ]
+    group = [
+      {
+        id   = "BSQZmvX6hvuKGPDHX7R3"
+        type = "attribution_group"
+      },
+      {
+        id   = "cloud_provider"
+        type = "fixed"
+      }
+    ]
+    layout         = "table"
+    display_values = "actuals_only"
+    currency       = "USD"
   }
 }
