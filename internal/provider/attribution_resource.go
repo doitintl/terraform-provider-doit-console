@@ -47,13 +47,13 @@ type attributionResource struct {
 
 // Metadata returns the resource type name.
 func (r *attributionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	log.Print("hello attribution Metadata:)")
+	log.Print(" attribution Metadata")
 	resp.TypeName = req.ProviderTypeName + "_attribution"
 }
 
 // Schema defines the schema for the resource.
 func (r *attributionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	log.Print("hello attribution Schema:)")
+	log.Print(" attribution Schema")
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -106,7 +106,7 @@ func (r *attributionResource) Schema(_ context.Context, _ resource.SchemaRequest
 
 // Configure adds the provider configured client to the resource.
 func (r *attributionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	log.Print("hello attribution Configure:)")
+	log.Print(" attribution Configure")
 	if req.ProviderData == nil {
 		return
 	}
@@ -127,7 +127,7 @@ func (r *attributionResource) Configure(_ context.Context, req resource.Configur
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *attributionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	log.Println("hello attribution Create:)")
+	log.Println(" attribution Create")
 	log.Println(r.client.Auth.DoiTAPITOken)
 	log.Println("---------------------------------------------------")
 	log.Println(r.client.Auth.CustomerContext)
@@ -186,7 +186,7 @@ func (r *attributionResource) Create(ctx context.Context, req resource.CreateReq
 
 // Read refreshes the Terraform state with the latest data.
 func (r *attributionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	log.Print("hello attribution Read:)")
+	log.Print(" attribution Read")
 	// Get current state
 	var state attributionResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -194,7 +194,7 @@ func (r *attributionResource) Read(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	log.Print("state id::::::::::::::::::::::::::)")
+	log.Print("state id:::::::::::::::::::::::::")
 	log.Print(state.Id.ValueString())
 	// Get refreshed attribution value from DoiT
 	attribution, err := r.client.GetAttribution(state.Id.ValueString())
@@ -226,7 +226,7 @@ func (r *attributionResource) Read(ctx context.Context, req resource.ReadRequest
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
-	log.Print("state read::::::::::::::::::::::::::)")
+	log.Print("state read")
 	log.Print(state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -235,7 +235,7 @@ func (r *attributionResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *attributionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	log.Print("hello attribution Update:)")
+	log.Print("attribution Update")
 	// Retrieve values from plan
 	var plan attributionResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -324,7 +324,7 @@ func (r *attributionResource) Update(ctx context.Context, req resource.UpdateReq
 // Delete deletes the resource and removes the Terraform state on success.
 
 func (r *attributionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	log.Print("hello attribution Delete:)")
+	log.Print(" attribution Delete")
 	// Retrieve values from state
 	var state attributionResourceModel
 	diags := req.State.Get(ctx, &state)

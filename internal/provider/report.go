@@ -49,6 +49,8 @@ func (c *ClientTest) UpdateReport(reportID string, report Report) (*Report, erro
 	if err != nil {
 		return nil, err
 	}
+	log.Print("Report body----------------")
+	log.Println(string(rb))
 	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/analytics/v1/reports/%s/?customerContext=%s", c.HostURL, reportID, c.Auth.CustomerContext), strings.NewReader(string(rb)))
 	if err != nil {
 		return nil, err
@@ -106,4 +108,3 @@ func (c *ClientTest) GetReport(orderID string) (*Report, error) {
 
 	return &report, nil
 }
-

@@ -197,13 +197,13 @@ type reportResource struct {
 
 // Metadata returns the resource type name.
 func (r *reportResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	log.Print("hello report Metadata:)")
+	log.Print(" report Metadata")
 	resp.TypeName = req.ProviderTypeName + "_report"
 }
 
 // Schema defines the schema for the resource.
 func (r *reportResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	log.Print("hello report Schema:)")
+	log.Print(" report Schema")
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"config": schema.SingleNestedAttribute{
@@ -486,7 +486,7 @@ func (r *reportResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 
 // Configure adds the provider configured client to the resource.
 func (r *reportResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	log.Print("hello report Configure:)")
+	log.Print(" report Configure")
 	if req.ProviderData == nil {
 		return
 	}
@@ -507,7 +507,7 @@ func (r *reportResource) Configure(_ context.Context, req resource.ConfigureRequ
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *reportResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	log.Println("hello report Create:)")
+	log.Println(" report Create")
 	log.Println(r.client.Auth.DoiTAPITOken)
 	log.Println("---------------------------------------------------")
 	log.Println(r.client.Auth.CustomerContext)
@@ -621,9 +621,7 @@ func (r *reportResource) Create(ctx context.Context, req resource.CreateRequest,
 	println(plan.Config.IncludePromotionalCredits.ValueBool())
 	if !plan.Config.IncludePromotionalCredits.IsNull() {
 		config.IncludePromotionalCredits = plan.Config.IncludePromotionalCredits.ValueBool()
-	} /*else {
-		config.IncludePromotionalCredits = false
-	}*/
+	}
 
 	config.Layout = plan.Config.Layout.ValueString()
 	if plan.Config.Metric != nil {
@@ -736,7 +734,7 @@ func (r *reportResource) Create(ctx context.Context, req resource.CreateRequest,
 
 // Read refreshes the Terraform state with the latest data.
 func (r *reportResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	log.Print("hello report Read:)")
+	log.Print("report Read")
 	// Get current state
 	var state reportResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -744,7 +742,7 @@ func (r *reportResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	log.Print("state id::::::::::::::::::::::::::)")
+	log.Print("state id")
 	log.Print(state.Id.ValueString())
 	// Get refreshed report value from DoiT
 	report, err := r.client.GetReport(state.Id.ValueString())
@@ -755,7 +753,7 @@ func (r *reportResource) Read(ctx context.Context, req resource.ReadRequest, res
 		)
 		return
 	}
-	log.Print("response::::::::::::::::::::::::::)")
+	log.Print("response")
 	log.Print(report)
 	state.Id = types.StringValue(report.Id)
 	log.Print("a")
@@ -866,7 +864,7 @@ func (r *reportResource) Read(ctx context.Context, req resource.ReadRequest, res
 	log.Print("i")
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
-	log.Print("state read::::::::::::::::::::::::::)")
+	log.Print("state read")
 	log.Print(state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -875,7 +873,7 @@ func (r *reportResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	log.Print("hello report Update:)")
+	log.Print(" report Update")
 	// Retrieve values from plan
 	var plan reportResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -894,9 +892,11 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 	// Generate API request body from plan
 	var report Report
 	report.Id = state.Id.ValueString()
+	log.Print("plan.Description")
+	log.Print(plan.Description)
 	report.Description = plan.Description.ValueString()
 	report.Name = plan.Name.ValueString()
-	if report.Config.AdvancedAnalysis != nil {
+	if plan.Config.AdvancedAnalysis != nil {
 		report.Config.AdvancedAnalysis = &AdvancedAnalysis{
 			Forecast:     plan.Config.AdvancedAnalysis.Forecast.ValueBool(),
 			NotTrending:  plan.Config.AdvancedAnalysis.NotTrending.ValueBool(),
@@ -1138,7 +1138,7 @@ func (r *reportResource) Update(ctx context.Context, req resource.UpdateRequest,
 // Delete deletes the resource and removes the Terraform state on success.
 
 func (r *reportResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	log.Print("hello report Delete:)")
+	log.Print("report Delete")
 	// Retrieve values from state
 	var state reportResourceModel
 	diags := req.State.Get(ctx, &state)

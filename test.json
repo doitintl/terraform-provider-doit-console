@@ -1,20 +1,13 @@
 {
-    "id": "CPTB67hKNRBWFe7zqgCL",
-    "name": "test8",
-    "description": "test",
     "config": {
-        "metric": {
-            "type": "basic",
-            "value": "cost"
+        "advancedAnalysis": {
+            "forecast": false,
+            "notTrending": false,
+            "trendingDown": false,
+            "trendingUp": false
         },
         "aggregation": "total",
-        "advancedAnalysis": {
-            "trendingUp": false,
-            "trendingDown": false,
-            "notTrending": false,
-            "forecast": false
-        },
-        "timeInterval": "month",
+        "currency": "USD",
         "dimensions": [
             {
                 "id": "year",
@@ -25,18 +18,12 @@
                 "type": "datetime"
             }
         ],
-        "timeRange": {
-            "mode": "last",
-            "amount": 12,
-            "includeCurrent": true,
-            "unit": "month"
-        },
-        "includePromotionalCredits": false,
+        "displayValues": "actuals_only",
         "filters": [
             {
                 "id": "attribution",
-                "type": "attribution",
                 "inverse": false,
+                "type": "attribution",
                 "values": [
                     "1CE699ZdwN5CRBw0tInY"
                 ]
@@ -45,17 +32,21 @@
         "group": [
             {
                 "id": "BSQZmvX6hvuKGPDHX7R3",
-                "type": "attribution_group",
-                "limit": null
+                "type": "attribution_group"
             },
             {
                 "id": "cloud_provider",
-                "type": "fixed",
-                "limit": null
+                "type": "fixed"
             }
         ],
+        "includePromotionalCredits": false,
         "layout": "table",
-        "displayValues": "actuals_only",
-        "currency": "USD"
-    }
+        "metric": {
+            "type": "basic",
+            "value": "cost"
+        },
+        "timeInterval": "month"
+    },
+    "id": "LC1RuXGBMHXUllXpvfio",
+    "name": "test10"
 }
