@@ -1,3 +1,6 @@
+# Deprecated!
+This new repository for this project is located here: https://github.com/doitintl/terraform-provider-doit
+
 # DoiT Console Provider 
 
 This is a initial Proof of Concept to create a Terraform provider for the  DOiT Console.
